@@ -83,27 +83,28 @@
         class="blog__posts articles-wrapper remove-scroll-left slider--desktop contains-card contains-card--article{% if settings.blog_card_style == 'standard' %} contains-card--standard{% endif %} grid grid--peek grid--2-col-tablet grid--{{ section.settings.columns_desktop }}-col-desktop slider {% if posts_displayed > 2 %}slider--tablet{% else %}slider--mobile{% endif %}"
         role="list"
       >
-        {%- if all_blogs != blank -%}
+{%- if all_blogs != blank -%}
 
-          {% assign product-tags = '' %}
-              {% for prod_tags in product.tags %}
-                {% assign product-tags = prod_tags  %}
-      {% endfor %}
+  {% assign product-tags = '' %}
+  {% for prod_tags in product.tags %}
+    {% assign product-tags = product-tags | append: prod_tags | append: ',' %}
+  {% endfor %}
 
-   {% assign blog_item_count = 0 %}
-{% for blog_handle in all_blogs %}  
+
+{% assign blog_item_count = 0 %}
+
+{% for blog_handle in all_blogs %}
   {%- for article in blogs[blog_handle].articles -%}
-
-
-    {% assign blog-tags = false %}   
+    {% assign blog_tags_found = false %}
     
-     {%- for blog_tags in article.tags -%}
-       {% if blog_tags contains product-tags %}
-          {% assign blog-tags = true %} 
-         {% endif %}
-       {% endfor %}
-{% if  blog-tags  %}
-  {% assign blog_item_count = blog_item_count | plus: 1 %}
+    {%- for blog_tag in article.tags -%}
+      {%- if product.tags contains blog_tag -%}
+        {% assign blog_tags_found = true %}
+      {% endif %}
+    {%- endfor %}
+    
+    {% if blog_tags_found %}
+      {% assign blog_item_count = blog_item_count | plus: 1 %}
       <li
         id="Slide-{{ section.id }}-{{ forloop.index }}"
         class="blog__post grid__item blog-slide-new article article-size-{{ forloop.index }} slider__slide slider__slide--full-width{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -122,12 +123,9 @@
           show_excerpt: true
         %}
       </li>
-
-{% endif %}
-  {%- endfor -%}
-{%- endfor -%}
-
-
+    {% endif %}
+  {%- endfor %}
+{% endfor %}
 
 
         {%- else -%}
@@ -203,7 +201,7 @@
             <span class="slider-counter--current">1</span>
             <span aria-hidden="true"> / </span>
             <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-            <span class="slider-counter--total">{{ section.settings.post_limit }}</span>
+            <span class="slider-counter--total">{{ blog_item_count }}</span>
           </div>
           <button
             type="button"
